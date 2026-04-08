@@ -42,7 +42,7 @@ RetailIQ provides:
 
 ## ⚙️ System Architecture
 
-
+```
 Frontend (Next.js / React)
 ↓
 Backend (Node.js / Express)
@@ -50,7 +50,7 @@ Backend (Node.js / Express)
 Database (MongoDB)
 ↓
 AI Microservice (FastAPI - Python)
-
+```
 
 ---
 
@@ -142,7 +142,7 @@ AI Microservice (FastAPI - Python)
 
 ## 📂 Project Structure
 
-
+```
 RetailIQ/
 ├── frontend/
 │ ├── src/
@@ -163,7 +163,7 @@ RetailIQ/
 │ └── utils/
 │
 └── README.md
-
+```
 
 ---
 
