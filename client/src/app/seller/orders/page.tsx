@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../../../lib/firebase";
 import Sidebar from "../../../components/Sidebar";
+import Navbar from "@/components/Navbar";
 import { Package, Clock, CheckCircle, DollarSign } from "lucide-react";
 
 export default function SellerOrdersPage() {
@@ -137,8 +138,9 @@ export default function SellerOrdersPage() {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar />
-      
-      <main className="ml-64 flex-1 p-8">
+      <div className="flex-1 flex flex-col ml-64">
+        <Navbar />
+      <main className="flex-1 overflow-y-auto p-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Orders Management</h1>
           <p className="text-gray-600 mt-1">Track and manage all your customer orders</p>
@@ -245,6 +247,7 @@ export default function SellerOrdersPage() {
           )}
         </div>
       </main>
+      </div>
     </div>
   );
 }

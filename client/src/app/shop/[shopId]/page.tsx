@@ -414,10 +414,24 @@ export default function ShopPage() {
                   <Store className="w-6 h-6 text-orange-600" />
                 </div>
               )}
-              <div>
+              {/* <div>
                 <h1 className="text-xl font-bold text-gray-900">{shop.name}</h1>
                 <p className="text-sm text-gray-600">{shop.type || "Shop"}</p>
-              </div>
+              </div> */}
+              <div className="flex flex-col">
+  {/* The Main Name: Bold, High-Impact tracking */}
+  <h1 className="text-3xl font-black text-gray-900 uppercase tracking-tighter leading-none transition-all group-hover:text-orange-600">
+    {shop.name}
+  </h1>
+  
+  {/* The Subtitle: Elegant, Spaced-out Luxury aesthetic */}
+  <div className="flex items-center gap-3 mt-1.5">
+    <div className="h-[2px] w-5 bg-orange-600 rounded-full" />
+    <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em] leading-none">
+      {shop.type || "Official Store"}
+    </p>
+  </div>
+</div>
             </div>
 
             <button
@@ -439,16 +453,50 @@ export default function ShopPage() {
       {/* Shop Info Banner */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-wrap gap-6 text-sm text-gray-600">
-            <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-orange-600" />
-              <span>{shop.address}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Phone className="w-4 h-4 text-orange-600" />
-              <span>{shop.mobile}</span>
-            </div>
-          </div>
+<div className="relative -mt-6 z-10 px-6 lg:px-8">
+  <div className="max-w-7xl mx-auto">
+    {/* Glassmorphism Container */}
+    <div className="bg-white/80 backdrop-blur-xl border border-white/50 shadow-[0_15px_40px_rgba(0,0,0,0.04)] rounded-[2rem] p-2 flex flex-wrap items-center gap-3">
+      
+      {/* Location Pod */}
+      <div className="flex-1 min-w-[200px] flex items-center gap-4 bg-white shadow-sm rounded-2xl px-5 py-3 border border-gray-50 transition-all hover:shadow-md group cursor-pointer">
+        <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center group-hover:bg-orange-600 transition-colors duration-300">
+          <MapPin className="w-5 h-5 text-orange-600 group-hover:text-white transition-colors" />
+        </div>
+        <div className="flex flex-col">
+          <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Store Locator</span>
+          <span className="text-[12px] font-bold text-gray-900 truncate max-w-[150px] tracking-tight">{shop.address}</span>
+        </div>
+      </div>
+
+      {/* Contact Pod */}
+      <div className="flex-1 min-w-[200px] flex items-center gap-4 bg-white shadow-sm rounded-2xl px-5 py-3 border border-gray-50 transition-all hover:shadow-md group cursor-pointer">
+        <div className="w-10 h-10 bg-gray-900 rounded-xl flex items-center justify-center group-hover:bg-orange-600 transition-colors duration-300">
+          <Phone className="w-5 h-5 text-orange-500 group-hover:text-white transition-colors" />
+        </div>
+        <div className="flex flex-col">
+          <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Direct Support</span>
+          <span className="text-[12px] font-black text-gray-900 tracking-widest">{shop.mobile}</span>
+        </div>
+      </div>
+
+      {/* Innovative Visual Accent: Live Inventory Status */}
+      <div className="hidden md:flex items-center gap-4 px-6 py-2">
+        <div className="flex flex-col items-end">
+           <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Stock Status</span>
+           <div className="flex items-center gap-2">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+              </span>
+              <span className="text-[10px] font-black text-gray-900 uppercase">Live & Ready</span>
+           </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
         </div>
       </div>
 

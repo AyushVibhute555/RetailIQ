@@ -26,6 +26,7 @@ import {
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { QRCodeCanvas } from "qrcode.react";
 import app from "../../../lib/firebase";
+import Navbar from "@/components/Navbar";
 
 export default function SellerDashboard() {
   const [user, setUser] = useState<any>(null);
@@ -243,11 +244,18 @@ export default function SellerDashboard() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
-      <Sidebar />
-
+      <div className="w-64 h-full flex-shrink-0 z-30 bg-white border-r border-gray-100">
+        <Sidebar />
+      
+     </div>
+      <div className="flex-1 flex flex-col min-w-0 h-full">
+      {/* 3. NAVBAR */}
+        <header className="h-[70px] bg-white border-b border-gray-100 flex-shrink-0 z-20">
+          <Navbar />
+        </header>
       {/* Main Content */}
-      <main className="ml-64 flex-1 p-8">
+      <main className="flex-1 overflow-y-auto p-8">
+        <div className="max-w-7xl mx-auto">
         {activeRoute === "dashboard" && (
           <>
             <div className="mb-8">
@@ -437,7 +445,9 @@ export default function SellerDashboard() {
             <p className="text-gray-600">Settings functionality coming soon...</p>
           </div>
         )}
+       </div>
       </main>
+      </div>
 
       {/* QR Modal (Unchanged) */}
       {showQRModal && shop && (
@@ -620,5 +630,6 @@ export default function SellerDashboard() {
         </div>
       )}
     </div>
+    
   );
 }

@@ -56,6 +56,12 @@ export default function Sidebar() {
   return (
     <aside className="w-64 min-h-screen bg-gradient-to-r from-slate-900 via-black to-slate-900 text-white fixed">
       {/* Logo */}
+            <div className="p-6 mb-4">
+         <Link href="/" className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center font-black text-white">R</div>
+            <span className="font-bold text-xl tracking-tighter">RetailIQ</span>
+         </Link>
+      </div>
 
 
       {/* Nav */}
