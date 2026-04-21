@@ -39,7 +39,7 @@ export default function AnalyticsPage() {
   const [timeframe, setTimeframe] = useState("monthly");
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-  const ML_API_URL = "http://localhost:8000";
+  const ML_API_URL = process.env.NEXT_PUBLIC_ANALYTICS_URL || "http://localhost:8000";
 
   useEffect(() => {
     const auth = getAuth(app);
@@ -69,13 +69,13 @@ export default function AnalyticsPage() {
       }
     });
     return () => unsubscribe();
-  }, []);
+  }, [API_URL, timeframe]);
 
   useEffect(() => {
     if (shop?._id) {
       fetchAnalytics(shop._id, timeframe);
     }
-  }, [timeframe]);
+  }, [shop._id, timeframe]);
 
   const fetchAnalytics = async (shopId: string, selectedTimeframe: string) => {
     try {

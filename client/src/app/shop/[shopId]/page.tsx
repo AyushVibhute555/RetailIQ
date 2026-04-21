@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ShoppingCart, Minus, Plus, Download, Store, Phone, MapPin, X, Package, CreditCard, CheckCircle, Tag, Receipt } from "lucide-react";
+import { ShoppingCart, Minus, Plus, Download, Store, Phone, MapPin, X, Package, CreditCard, CheckCircle, Tag, Receipt, MessageCircle, Send, Search } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -20,8 +20,19 @@ export default function ShopPage() {
   const [appliedDiscount, setAppliedDiscount] = useState(0);
   const [couponError, setCouponError] = useState("");
 
+  // 🆕 Search State
+  const [searchQuery, setSearchQuery] = useState("");
+
   // 🆕 NEW: Placed Order State for the Receipt Bill Screen
   const [placedOrder, setPlacedOrder] = useState<any>(null);
+
+  // --- 🆕 CHATBOT STATES ---
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatTab, setChatTab] = useState<"ai" | "review">("ai");
+  const [chatMessage, setChatMessage] = useState("");
+  const [chatHistory, setChatHistory] = useState<{ role: string, text: string }[]>([
+    { role: "bot", text: "Hi! How can I help you today?" }
+  ]);
 
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -130,15 +141,38 @@ export default function ShopPage() {
     }
   };
 
+  // --- 🆕 CHATBOT LOGIC ---
+  const handleSendMessage = () => {
+    if (!chatMessage.trim()) return;
+    const userMsg = { role: "user", text: chatMessage };
+    setChatHistory(prev => [...prev, userMsg]);
+    
+    const query = chatMessage.toLowerCase();
+    const foundProduct = products.find(p => query.includes(p.name.toLowerCase()));
+    setChatMessage("");
 
-  // 🆕 UPGRADED PDF GENERATOR
+    setTimeout(() => {
+      let botResponse = "I'm not sure about that item. Try asking about our products!";
+      if (foundProduct) {
+        botResponse = `${foundProduct.name} is ₹${foundProduct.price}. ${foundProduct.description || ""}`;
+      } else if (query.includes("hi") || query.includes("hello")) {
+        botResponse = "Hello! I'm the RetailIQ Assistant. Ask me anything!";
+      }
+      setChatHistory(prev => [...prev, { role: "bot", text: botResponse }]);
+    }, 800);
+  };
+
+  // 🆕 Filtered Products Logic
+  const filteredProducts = products.filter((p) =>
+    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (p.category && p.category.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
   // 🆕 UPGRADED PDF GENERATOR
   const downloadOrderPDF = (orderData: any) => {
     const doc = new jsPDF();
-
-    // 1. Header Section (Centered)
     doc.setFontSize(22);
-    doc.setTextColor(234, 88, 12); // Orange-600 to match theme
+    doc.setTextColor(234, 88, 12);
     doc.text(shop?.name || "RetailIQ Receipt", 105, 20, { align: "center" });
 
     doc.setFontSize(10);
@@ -146,11 +180,9 @@ export default function ShopPage() {
     doc.text(`Address: ${shop?.address || "N/A"}`, 105, 28, { align: "center" });
     doc.text(`Phone: ${shop?.mobile || "N/A"}`, 105, 34, { align: "center" });
 
-    // Divider line
     doc.setDrawColor(220, 220, 220);
     doc.line(14, 40, 196, 40);
 
-    // 2. Order Details
     doc.setFontSize(11);
     doc.setTextColor(50, 50, 50);
     doc.text(`Order ID: ${orderData._id}`, 14, 50);
@@ -158,7 +190,6 @@ export default function ShopPage() {
     doc.text(`Payment Method: ${orderData.paymentMethod.toUpperCase()}`, 14, 62);
     doc.text(`Status: ${orderData.paymentStatus.toUpperCase()}`, 14, 68);
 
-    // 3. Table Data (Using "Rs." instead of "₹" to prevent PDF encoding errors)
     const tableData = orderData.items.map((item: any) => [
       item.name,
       item.quantity.toString(),
@@ -171,27 +202,16 @@ export default function ShopPage() {
       head: [["Product Item", "Qty", "Unit Price", "Total"]],
       body: tableData,
       theme: 'striped',
-      headStyles: { fillColor: [234, 88, 12], textColor: 255 }, // Orange header
+      headStyles: { fillColor: [234, 88, 12], textColor: 255 },
       styles: { fontSize: 10, cellPadding: 6 },
-      columnStyles: {
-        0: { halign: 'left' },
-        1: { halign: 'center' },
-        2: { halign: 'right' },
-        3: { halign: 'right' },
-      }
     });
 
     const finalY = (doc as any).lastAutoTable.finalY + 15;
-
-    // 4. Grand Total (Aligned to the right)
     doc.setFontSize(14);
-    doc.setTextColor(17, 24, 39); // Dark Gray
+    doc.setTextColor(17, 24, 39);
     doc.text(`Grand Total: Rs. ${orderData.totalAmount.toFixed(2)}`, 196, finalY, { align: "right" });
-
-    // Save the file
     doc.save(`Receipt_${orderData._id}.pdf`);
   };
-
 
   const handleCashPayment = async () => {
     try {
@@ -207,7 +227,6 @@ export default function ShopPage() {
       const data = await res.json();
 
       if (data.success) {
-        // 🆕 Replaced alert with the beautiful bill screen
         setPlacedOrder(data.order);
         setCart({});
         setShowCart(false);
@@ -234,7 +253,6 @@ export default function ShopPage() {
 
   const handleOnlinePayment = async () => {
     const res = await loadRazorpayScript();
-
     if (!res) {
       alert("Razorpay SDK failed to load. Are you online?");
       return;
@@ -248,7 +266,6 @@ export default function ShopPage() {
       });
 
       const initData = await initRes.json();
-
       if (!initData.success) {
         alert("Failed to initialize payment");
         return;
@@ -276,9 +293,7 @@ export default function ShopPage() {
           });
 
           const orderData = await orderRes.json();
-
           if (orderData.success) {
-            // 🆕 Replaced alert with the beautiful bill screen
             setPlacedOrder(orderData.order);
             setCart({});
             setShowCart(false);
@@ -288,14 +303,11 @@ export default function ShopPage() {
             alert(orderData.message || "Payment verification failed");
           }
         },
-        theme: {
-          color: "#ea580c",
-        },
+        theme: { color: "#ea580c" },
       };
 
       const paymentObject = new (window as any).Razorpay(options);
       paymentObject.open();
-
     } catch (error) {
       console.error("Payment error:", error);
       alert("Something went wrong during payment processing.");
@@ -322,7 +334,7 @@ export default function ShopPage() {
   return (
     <div className="min-h-screen bg-gray-50 relative">
 
-      {/* 🆕 BILL / RECEIPT SCREEN (Shows after payment) */}
+      {/* 🆕 BILL / RECEIPT SCREEN */}
       {placedOrder && (
         <div className="fixed inset-0 bg-gray-50/95 backdrop-blur-sm z-[100] flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white max-w-md w-full rounded-2xl shadow-xl p-6 md:p-8 animate-in fade-in zoom-in duration-300">
@@ -398,6 +410,88 @@ export default function ShopPage() {
         </div>
       )}
 
+      {/* --- 🆕 CHATBOT UI --- */}
+      <div className="fixed bottom-6 right-6 z-[100] flex flex-col items-end">
+        {isChatOpen && (
+          <div className="mb-4 w-80 md:w-96 bg-white rounded-2xl shadow-xl border border-gray-200 flex flex-col overflow-hidden animate-in slide-in-from-bottom-5">
+            <div className="bg-gray-900 p-4">
+              <div className="flex bg-gray-800 rounded-lg p-1">
+                <button 
+                  onClick={() => setChatTab("ai")} 
+                  className={`flex-1 py-1 text-xs font-bold rounded transition-colors ${chatTab === 'ai' ? 'bg-orange-600 text-white' : 'text-gray-400 hover:text-white'}`}
+                >
+                  AI Chat
+                </button>
+                <button 
+                  onClick={() => setChatTab("review")} 
+                  className={`flex-1 py-1 text-xs font-bold rounded transition-colors ${chatTab === 'review' ? 'bg-orange-600 text-white' : 'text-gray-400 hover:text-white'}`}
+                >
+                  Reviews
+                </button>
+              </div>
+            </div>
+
+            <div className="h-80 overflow-y-auto p-4 bg-gray-50">
+              {chatTab === "ai" ? (
+                <div className="space-y-3">
+                  {chatHistory.map((msg, i) => (
+                    <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`p-3 rounded-xl text-sm shadow-sm max-w-[85%] ${
+                        msg.role === 'user' 
+                          ? 'bg-orange-600 text-white' 
+                          : 'bg-white border border-gray-200 text-gray-900'
+                      }`}>
+                        {msg.text}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                   <select className="w-full p-2 border border-gray-300 rounded-lg text-sm bg-white text-gray-900 focus:ring-2 focus:ring-orange-500 outline-none">
+                     {products.map(p => <option key={p._id} className="text-gray-900">{p.name}</option>)}
+                   </select>
+                   <textarea 
+                     placeholder="Write a review..." 
+                     className="w-full p-2 border border-gray-300 rounded-lg text-sm h-24 bg-white text-gray-900 focus:ring-2 focus:ring-orange-500 outline-none" 
+                   />
+                    <button 
+                      onClick={() => { alert("Review submitted successfully!"); setChatTab("ai"); }}
+                      className="w-full bg-gray-900 hover:bg-black text-white py-2 rounded-lg text-sm font-bold"
+                    >
+                      Submit Review
+                    </button>
+                </div>
+              )}
+            </div>
+
+            {chatTab === "ai" && (
+              <div className="p-3 border-t border-gray-100 bg-white flex gap-2">
+                <input 
+                  value={chatMessage} 
+                  onChange={(e) => setChatMessage(e.target.value)} 
+                  onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()} 
+                  className="flex-1 bg-gray-100 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-gray-500 outline-none focus:ring-1 focus:ring-orange-500" 
+                  placeholder="Ask something..." 
+                />
+                <button 
+                  onClick={handleSendMessage} 
+                  className="bg-orange-600 hover:bg-orange-700 p-2 rounded-lg text-white transition-colors flex items-center justify-center"
+                >
+                  <Send size={16} />
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+        <button 
+          onClick={() => setIsChatOpen(!isChatOpen)} 
+          className="w-14 h-14 bg-orange-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all"
+        >
+          {isChatOpen ? <X size={24} /> : <MessageCircle size={28} />}
+        </button>
+      </div>
+
       {/* Header */}
       <header className="bg-white shadow-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -414,24 +508,17 @@ export default function ShopPage() {
                   <Store className="w-6 h-6 text-orange-600" />
                 </div>
               )}
-              {/* <div>
-                <h1 className="text-xl font-bold text-gray-900">{shop.name}</h1>
-                <p className="text-sm text-gray-600">{shop.type || "Shop"}</p>
-              </div> */}
               <div className="flex flex-col">
-  {/* The Main Name: Bold, High-Impact tracking */}
-  <h1 className="text-3xl font-black text-gray-900 uppercase tracking-tighter leading-none transition-all group-hover:text-orange-600">
-    {shop.name}
-  </h1>
-  
-  {/* The Subtitle: Elegant, Spaced-out Luxury aesthetic */}
-  <div className="flex items-center gap-3 mt-1.5">
-    <div className="h-[2px] w-5 bg-orange-600 rounded-full" />
-    <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em] leading-none">
-      {shop.type || "Official Store"}
-    </p>
-  </div>
-</div>
+                <h1 className="text-3xl font-black text-gray-900 uppercase tracking-tighter leading-none transition-all group-hover:text-orange-600">
+                  {shop.name}
+                </h1>
+                <div className="flex items-center gap-3 mt-1.5">
+                  <div className="h-[2px] w-5 bg-orange-600 rounded-full" />
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.25em] leading-none">
+                    {shop.type || "Official Store"}
+                  </p>
+                </div>
+              </div>
             </div>
 
             <button
@@ -453,68 +540,87 @@ export default function ShopPage() {
       {/* Shop Info Banner */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-<div className="relative -mt-6 z-10 px-6 lg:px-8">
-  <div className="max-w-7xl mx-auto">
-    {/* Glassmorphism Container */}
-    <div className="bg-white/80 backdrop-blur-xl border border-white/50 shadow-[0_15px_40px_rgba(0,0,0,0.04)] rounded-[2rem] p-2 flex flex-wrap items-center gap-3">
-      
-      {/* Location Pod */}
-      <div className="flex-1 min-w-[200px] flex items-center gap-4 bg-white shadow-sm rounded-2xl px-5 py-3 border border-gray-50 transition-all hover:shadow-md group cursor-pointer">
-        <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center group-hover:bg-orange-600 transition-colors duration-300">
-          <MapPin className="w-5 h-5 text-orange-600 group-hover:text-white transition-colors" />
-        </div>
-        <div className="flex flex-col">
-          <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Store Locator</span>
-          <span className="text-[12px] font-bold text-gray-900 truncate max-w-[150px] tracking-tight">{shop.address}</span>
-        </div>
-      </div>
+          <div className="relative -mt-6 z-10 px-6 lg:px-8">
+            <div className="max-w-7xl mx-auto">
+              <div className="bg-white/80 backdrop-blur-xl border border-white/50 shadow-[0_15px_40px_rgba(0,0,0,0.04)] rounded-[2rem] p-2 flex flex-wrap items-center gap-3">
+                <div className="flex-1 min-w-[200px] flex items-center gap-4 bg-white shadow-sm rounded-2xl px-5 py-3 border border-gray-50 transition-all hover:shadow-md group cursor-pointer">
+                  <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center group-hover:bg-orange-600 transition-colors duration-300">
+                    <MapPin className="w-5 h-5 text-orange-600 group-hover:text-white transition-colors" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Store Locator</span>
+                    <span className="text-[12px] font-bold text-gray-900 truncate max-w-[150px] tracking-tight">{shop.address}</span>
+                  </div>
+                </div>
 
-      {/* Contact Pod */}
-      <div className="flex-1 min-w-[200px] flex items-center gap-4 bg-white shadow-sm rounded-2xl px-5 py-3 border border-gray-50 transition-all hover:shadow-md group cursor-pointer">
-        <div className="w-10 h-10 bg-gray-900 rounded-xl flex items-center justify-center group-hover:bg-orange-600 transition-colors duration-300">
-          <Phone className="w-5 h-5 text-orange-500 group-hover:text-white transition-colors" />
-        </div>
-        <div className="flex flex-col">
-          <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Direct Support</span>
-          <span className="text-[12px] font-black text-gray-900 tracking-widest">{shop.mobile}</span>
-        </div>
-      </div>
+                <div className="flex-1 min-w-[200px] flex items-center gap-4 bg-white shadow-sm rounded-2xl px-5 py-3 border border-gray-50 transition-all hover:shadow-md group cursor-pointer">
+                  <div className="w-10 h-10 bg-gray-900 rounded-xl flex items-center justify-center group-hover:bg-orange-600 transition-colors duration-300">
+                    <Phone className="w-5 h-5 text-orange-500 group-hover:text-white transition-colors" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Direct Support</span>
+                    <span className="text-[12px] font-black text-gray-900 tracking-widest">{shop.mobile}</span>
+                  </div>
+                </div>
 
-      {/* Innovative Visual Accent: Live Inventory Status */}
-      <div className="hidden md:flex items-center gap-4 px-6 py-2">
-        <div className="flex flex-col items-end">
-           <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Stock Status</span>
-           <div className="flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-              </span>
-              <span className="text-[10px] font-black text-gray-900 uppercase">Live & Ready</span>
-           </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</div>
+                <div className="hidden md:flex items-center gap-4 px-6 py-2">
+                  <div className="flex flex-col items-end">
+                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Stock Status</span>
+                    <div className="flex items-center gap-2">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                      </span>
+                      <span className="text-[10px] font-black text-gray-900 uppercase">Live & Ready</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Products Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">All Products</h2>
-          <p className="text-gray-600 mt-1">{products.length} items available</p>
+        
+        {/* 🆕 Search Bar Section */}
+        <div className="mb-8">
+          <div className="relative max-w-md">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search products or categories..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="block w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-2xl text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-orange-500 outline-none shadow-sm transition-all"
+            />
+            {searchQuery && (
+              <button 
+                onClick={() => setSearchQuery("")}
+                className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600"
+              >
+                <X size={18} />
+              </button>
+            )}
+          </div>
         </div>
 
-        {products.length === 0 ? (
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">All Products</h2>
+          <p className="text-gray-600 mt-1">{filteredProducts.length} items found</p>
+        </div>
+
+        {filteredProducts.length === 0 ? (
           <div className="bg-white rounded-xl p-12 text-center border border-gray-200">
             <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-600">No products available at the moment</p>
+            <p className="text-gray-600">No products found matching your search</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {products.map((p) => {
+            {filteredProducts.map((p) => {
               const itemInCart = cart[p._id];
 
               return (
@@ -640,11 +746,8 @@ export default function ShopPage() {
               )}
             </div>
 
-            {/* Checkout Area */}
             {totalAmount > 0 && (
               <div className="p-6 bg-white border-t border-gray-200">
-
-                {/* COUPON SECTION */}
                 <div className="mb-4">
                   <div className="flex gap-2 mb-2">
                     <div className="relative flex-1">
