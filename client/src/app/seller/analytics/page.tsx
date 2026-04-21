@@ -20,6 +20,9 @@ import app from "../../../lib/firebase";
 import Navbar from "@/components/Navbar";
 
 export default function AnalyticsPage() {
+  // 1. ADDED: isMounted state to prevent Vercel SSR build crashes
+  const [isMounted, setIsMounted] = useState(false);
+
   const [user, setUser] = useState<any>(null);
   const [shop, setShop] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -40,6 +43,11 @@ export default function AnalyticsPage() {
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
   const ML_API_URL = process.env.NEXT_PUBLIC_ANALYTICS_URL || "http://localhost:8000";
+
+  // 2. ADDED: Set isMounted to true only in the browser
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     const auth = getAuth(app);
@@ -75,7 +83,7 @@ export default function AnalyticsPage() {
     if (shop?._id) {
       fetchAnalytics(shop._id, timeframe);
     }
-  }, [shop._id, timeframe]);
+  }, [shop?._id, timeframe]); // FIXED: Added "?" to shop?._id to prevent the dependency array crash
 
   const fetchAnalytics = async (shopId: string, selectedTimeframe: string) => {
     try {
@@ -98,6 +106,11 @@ export default function AnalyticsPage() {
 
   // Calculate Max Qty for visual progress bars
   const maxTopSellingQty = Math.max(...(analytics?.top_selling?.map((i: any) => i.qty) || [1]));
+
+  // 3. ADDED: Return null during server-build to prevent SSR crashes
+  if (!isMounted) {
+    return null;
+  }
 
   if (loading) {
     return (
