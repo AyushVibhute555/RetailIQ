@@ -63,7 +63,7 @@
 //           dashboard.
 //         </motion.p>
 
-        
+
 //       </section>
 
 //       {/* Our Services Section */}
@@ -104,12 +104,12 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  ArrowRight, 
-  BarChart3, 
-  ShieldCheck, 
-  Zap, 
-  Store, 
+import {
+  ArrowRight,
+  BarChart3,
+  ShieldCheck,
+  Zap,
+  Store,
   Globe,
   User,
   ChevronDown,
@@ -120,15 +120,15 @@ import {
 } from "lucide-react";
 
 // IMPORTANT: Ensure this path is correct or use the direct file if it's in public/
-import bgImage from "../assets/bg-cart.png"; 
+import bgImage from "../assets/bg-cart.png";
 
 // Animation Variants
 const fadeInUp = {
-  hidden: { opacity: 0, y: 40 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } 
+  hidden: { opacity: 0, y: 50 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.8, ease: [0.6, -0.05, 0.01, 0.99] } // <-- The error is here
   }
 };
 
@@ -148,7 +148,7 @@ export default function HomePage() {
 
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
-    
+
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
@@ -170,14 +170,13 @@ export default function HomePage() {
 
   return (
     <div className="bg-[#050505] text-white selection:bg-orange-500/30 selection:text-orange-500 overflow-x-hidden font-sans">
-      
+
       {/* --- NAVIGATION --- */}
-      <nav className={`fixed top-0 w-full z-[100] transition-all duration-500 ${
-        isScrolled ? "py-4 bg-black/80 backdrop-blur-2xl border-b border-white/5 shadow-2xl" : "py-8 bg-transparent"
-      }`}>
+      <nav className={`fixed top-0 w-full z-[100] transition-all duration-500 ${isScrolled ? "py-4 bg-black/80 backdrop-blur-2xl border-b border-white/5 shadow-2xl" : "py-8 bg-transparent"
+        }`}>
         <div className="max-w-7xl mx-auto px-8 flex justify-between items-center">
           <Link href="/" className="flex items-center gap-3 group">
-            <motion.div 
+            <motion.div
               whileHover={{ scale: 1.1, rotate: 5 }}
               className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(249,115,22,0.4)]"
             >
@@ -189,7 +188,7 @@ export default function HomePage() {
           </Link>
 
           <div className="relative" ref={dropdownRef}>
-            <motion.button 
+            <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 hover:border-orange-500/40 transition-all"
@@ -202,7 +201,7 @@ export default function HomePage() {
 
             <AnimatePresence>
               {isDropdownOpen && (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, y: 15, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 15, scale: 0.95 }}
@@ -244,7 +243,7 @@ export default function HomePage() {
             alt="Retail Background"
             fill
             priority
-            className="object-cover object-right md:object-center opacity-50 brightness-[0.7] contrast-125" 
+            className="object-cover object-right md:object-center opacity-50 brightness-[0.7] contrast-125"
           />
           {/* FADES: This makes the image blend into the black background */}
           <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-[#050505]/60 to-transparent" />
@@ -265,7 +264,7 @@ export default function HomePage() {
             </motion.p>
             <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row items-center justify-center gap-5">
               <Link href="/signup">
-                <motion.button 
+                <motion.button
                   whileHover={{ scale: 1.05, boxShadow: "0 0 40px rgba(249,115,22,0.4)" }}
                   whileTap={{ scale: 0.98 }}
                   className="group bg-orange-500 text-white px-10 py-5 rounded-2xl font-black text-lg transition-all flex items-center gap-2"
@@ -273,7 +272,7 @@ export default function HomePage() {
                   Launch Store <ArrowRight className="group-hover:translate-x-1 transition-transform" />
                 </motion.button>
               </Link>
-              <motion.button 
+              <motion.button
                 whileHover={{ backgroundColor: "rgba(255,255,255,0.1)" }}
                 className="bg-white/5 backdrop-blur-md border border-white/10 px-10 py-5 rounded-2xl font-black text-lg transition-all"
               >
@@ -287,7 +286,7 @@ export default function HomePage() {
       {/* --- STATS SECTION --- */}
       <section className="py-24 border-y border-white/5 bg-white/[0.01]">
         <div className="max-w-7xl mx-auto px-10">
-          <motion.div 
+          <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
@@ -295,9 +294,9 @@ export default function HomePage() {
             className="grid grid-cols-2 md:grid-cols-4 gap-12 text-center"
           >
             {[
-              { label: "Active Shops", val: "10K+" }, 
-              { label: "Daily Sales", val: "₹50M+" }, 
-              { label: "Uptime", val: "99.9%" }, 
+              { label: "Active Shops", val: "10K+" },
+              { label: "Daily Sales", val: "₹50M+" },
+              { label: "Uptime", val: "99.9%" },
               { label: "Support", val: "24/7" }
             ].map((stat, i) => (
               <motion.div key={i} variants={fadeInUp}>
@@ -312,7 +311,7 @@ export default function HomePage() {
       {/* --- FEATURES GRID --- */}
       <section className="py-40 px-10">
         <div className="max-w-7xl mx-auto">
-          <motion.div 
+          <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
@@ -325,11 +324,11 @@ export default function HomePage() {
             </h3>
           </motion.div>
 
-          <motion.div 
-            initial="hidden" 
-            whileInView="visible" 
-            viewport={{ once: true }} 
-            variants={staggerContainer} 
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
             className="grid grid-cols-1 md:grid-cols-3 gap-8"
           >
             <FeatureCard icon={<Zap className="text-orange-500" />} title="Instant Billing" desc="Generate professional invoices in seconds. Support for all thermal printers and digital receipts." />
@@ -337,16 +336,16 @@ export default function HomePage() {
             <FeatureCard icon={<ShieldCheck className="text-orange-500" />} title="Secure Cloud" desc="Bank-level encryption and daily automated backups ensure your business data is never lost." />
             <FeatureCard icon={<Store className="text-orange-500" />} title="Multi-Store" desc="Manage one location or a thousand. Our global dashboard scales as fast as your ambition." />
             <FeatureCard icon={<Globe className="text-orange-500" />} title="Online Catalog" desc="Turn your physical inventory into a beautiful public website with just one click." />
-            
+
             {/* CTA CARD */}
-            <motion.div 
+            <motion.div
               variants={fadeInUp}
               whileHover={{ y: -10 }}
               className="p-10 rounded-[2.5rem] bg-orange-500 flex flex-col justify-center items-center text-center shadow-2xl shadow-orange-500/20"
             >
               <h4 className="text-3xl font-black mb-6 text-white tracking-tighter italic uppercase">"Scale or <br />get left behind."</h4>
               <Link href="/signup" className="w-full">
-                <motion.button 
+                <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="w-full bg-black text-white px-8 py-4 rounded-2xl font-black hover:bg-zinc-900 transition-colors shadow-xl"
@@ -388,9 +387,9 @@ function DropdownItem({ href, icon, label }: { href: string, icon: any, label: s
 
 function FeatureCard({ icon, title, desc }: { icon: any, title: string, desc: string }) {
   return (
-    <motion.div 
-      variants={fadeInUp} 
-      whileHover={{ y: -10, borderColor: "rgba(249, 115, 22, 0.4)" }} 
+    <motion.div
+      variants={fadeInUp}
+      whileHover={{ y: -10, borderColor: "rgba(249, 115, 22, 0.4)" }}
       className="p-10 rounded-[2.5rem] bg-white/[0.02] border border-white/5 transition-all duration-300 group shadow-lg"
     >
       <div className="w-16 h-16 rounded-[1.25rem] bg-orange-500/10 flex items-center justify-center mb-8 group-hover:bg-orange-500 group-hover:text-white transition-all duration-300 shadow-sm">
