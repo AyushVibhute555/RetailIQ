@@ -1,7 +1,7 @@
 // controllers/productController.js
 import Product from "../models/productModel.js";
 import Shop from "../models/shopModel.js";
-import { bucket } from "../firebase.js"; // ⚠️ Update this path if your firebase.js is in a different folder!
+import { bucket } from "../config/firebase.js";
 
 // 🛠️ HELPER FUNCTION: Uploads buffer to Firebase and returns the public URL
 const uploadImageToFirebase = async (file) => {
