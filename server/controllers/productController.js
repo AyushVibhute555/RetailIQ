@@ -1,6 +1,26 @@
 // controllers/productController.js
 import Product from "../models/productModel.js";
 import Shop from "../models/shopModel.js";
+import { bucket } from "../firebase.js"; // ⚠️ Update this path if your firebase.js is in a different folder!
+
+// 🛠️ HELPER FUNCTION: Uploads buffer to Firebase and returns the public URL
+const uploadImageToFirebase = async (file) => {
+  // Create a unique filename and replace spaces with underscores to prevent broken URLs
+  const fileName = `products/${Date.now()}_${file.originalname.replace(/\s+/g, '_')}`;
+  const fileUpload = bucket.file(fileName);
+
+  // Upload the file from memory to Firebase
+  await fileUpload.save(file.buffer, {
+    metadata: { contentType: file.mimetype },
+  });
+
+  // Make the file public so your React frontend can display it
+  await fileUpload.makePublic();
+
+  // Return the permanent public URL
+  return `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+};
+
 
 export const addProduct = async (req, res) => {
   try {
@@ -11,7 +31,11 @@ export const addProduct = async (req, res) => {
       return res.status(404).json({ success: false, message: "Shop not found" });
     }
 
-    const imagePath = req.file ? `/uploads/${req.file.filename}` : "";
+    // 🆕 FIREBASE FIX: Upload image if one exists
+    let imageUrl = "";
+    if (req.file) {
+      imageUrl = await uploadImageToFirebase(req.file);
+    }
 
     const product = await Product.create({
       shopId: shop._id,
@@ -20,7 +44,7 @@ export const addProduct = async (req, res) => {
       description,
       category,
       stock,
-      image: imagePath,
+      image: imageUrl, // Save the permanent Firebase URL
     });
 
     res.status(201).json({ success: true, message: "Product added successfully", product });
@@ -75,15 +99,15 @@ export const updateProductStock = async (req, res) => {
   }
 };
 
-// 🆕 NEW: Update FULL product details including optional new image
+// Update FULL product details including optional new image
 export const updateProduct = async (req, res) => {
   try {
     const { name, price, description, category, stock } = req.body;
     let updateData = { name, price, description, category, stock };
 
-    // If a new image was uploaded, update the image path
+    // 🆕 FIREBASE FIX: If a new image was uploaded, send it to Firebase
     if (req.file) {
-      updateData.image = `/uploads/${req.file.filename}`;
+      updateData.image = await uploadImageToFirebase(req.file);
     }
 
     const updatedProduct = await Product.findByIdAndUpdate(req.params.id, updateData, { new: true });
