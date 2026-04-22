@@ -2,10 +2,10 @@
 import express from "express";
 import verifyFirebaseToken from "../middleware/verifyFirebaseToken.js";
 import { upload } from "../utils/upload.js";
-import { 
-  addProduct, 
-  getProductsByShop, 
-  deleteProduct, 
+import {
+  addProduct,
+  getProductsByShop,
+  deleteProduct,
   updateProductStock,
   updateProduct // 🆕 Imported new controller
 } from "../controllers/productController.js";

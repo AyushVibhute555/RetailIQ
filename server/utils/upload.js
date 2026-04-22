@@ -1,17 +1,28 @@
 import multer from "multer";
+import { v2 as cloudinary } from "cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import dotenv from "dotenv";
 
-// 🛠️ THE FIX: Keep the file in memory (RAM) instead of the hard drive.
-// This generates the 'req.file.buffer' that Firebase needs for the upload.
-const storage = multer.memoryStorage();
+dotenv.config();
 
-export const upload = multer({
-  storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB limit
-  fileFilter: (req, file, cb) => {
-    // Keep your excellent security check!
-    if (!file.mimetype.startsWith("image/")) {
-      return cb(new Error("Only images are allowed"));
-    }
-    cb(null, true);
+// 1. Configure Cloudinary with your credentials
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// 2. Tell Multer to use Cloudinary for storage
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "retailiq_products", // It will create this folder in your Cloudinary account
+    allowed_formats: ["jpg", "jpeg", "png", "webp"], // Built-in security filter!
+    transformation: [{ width: 800, height: 800, crop: "limit" }] // Automatically resizes massive images to save space!
   },
+});
+
+export const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
 });

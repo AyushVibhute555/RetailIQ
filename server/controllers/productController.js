@@ -1,26 +1,8 @@
 // controllers/productController.js
 import Product from "../models/productModel.js";
 import Shop from "../models/shopModel.js";
-import { bucket } from "../config/firebase.js";
 
-// 🛠️ HELPER FUNCTION: Uploads buffer to Firebase and returns the public URL
-const uploadImageToFirebase = async (file) => {
-  // Create a unique filename and replace spaces with underscores to prevent broken URLs
-  const fileName = `products/${Date.now()}_${file.originalname.replace(/\s+/g, '_')}`;
-  const fileUpload = bucket.file(fileName);
-
-  // Upload the file from memory to Firebase
-  await fileUpload.save(file.buffer, {
-    metadata: { contentType: file.mimetype },
-  });
-
-  // Make the file public so your React frontend can display it
-  await fileUpload.makePublic();
-
-  // Return the permanent public URL
-  return `https://storage.googleapis.com/${bucket.name}/${fileName}`;
-};
-
+// Note: We completely removed the Firebase bucket import and helper function!
 
 export const addProduct = async (req, res) => {
   try {
@@ -31,10 +13,10 @@ export const addProduct = async (req, res) => {
       return res.status(404).json({ success: false, message: "Shop not found" });
     }
 
-    // 🆕 FIREBASE FIX: Upload image if one exists
+    // 🆕 CLOUDINARY FIX: The live URL is automatically generated and stored in req.file.path
     let imageUrl = "";
     if (req.file) {
-      imageUrl = await uploadImageToFirebase(req.file);
+      imageUrl = req.file.path;
     }
 
     const product = await Product.create({
@@ -44,7 +26,7 @@ export const addProduct = async (req, res) => {
       description,
       category,
       stock,
-      image: imageUrl, // Save the permanent Firebase URL
+      image: imageUrl, // Save the permanent Cloudinary URL to MongoDB
     });
 
     res.status(201).json({ success: true, message: "Product added successfully", product });
@@ -105,9 +87,9 @@ export const updateProduct = async (req, res) => {
     const { name, price, description, category, stock } = req.body;
     let updateData = { name, price, description, category, stock };
 
-    // 🆕 FIREBASE FIX: If a new image was uploaded, send it to Firebase
+    // 🆕 CLOUDINARY FIX: Update the image path if a new file was uploaded
     if (req.file) {
-      updateData.image = await uploadImageToFirebase(req.file);
+      updateData.image = req.file.path;
     }
 
     const updatedProduct = await Product.findByIdAndUpdate(req.params.id, updateData, { new: true });
