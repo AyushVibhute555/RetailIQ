@@ -36,6 +36,13 @@ export default function ShopPage() {
 
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
+  // 🛠️ THE FIX: Smart URL checker to handle both Cloudinary and local image paths
+  const getImageUrl = (imagePath: string) => {
+    if (!imagePath) return "/placeholder.png"; // Fallback
+    if (imagePath.startsWith("http")) return imagePath; // Cloudinary URLs
+    return `${baseUrl}${imagePath}`; // Old local uploads
+  };
+
   useEffect(() => {
     if (shopId) fetchShopData();
   }, [shopId]);
@@ -146,7 +153,7 @@ export default function ShopPage() {
     if (!chatMessage.trim()) return;
     const userMsg = { role: "user", text: chatMessage };
     setChatHistory(prev => [...prev, userMsg]);
-    
+
     const query = chatMessage.toLowerCase();
     const foundProduct = products.find(p => query.includes(p.name.toLowerCase()));
     setChatMessage("");
@@ -416,14 +423,14 @@ export default function ShopPage() {
           <div className="mb-4 w-80 md:w-96 bg-white rounded-2xl shadow-xl border border-gray-200 flex flex-col overflow-hidden animate-in slide-in-from-bottom-5">
             <div className="bg-gray-900 p-4">
               <div className="flex bg-gray-800 rounded-lg p-1">
-                <button 
-                  onClick={() => setChatTab("ai")} 
+                <button
+                  onClick={() => setChatTab("ai")}
                   className={`flex-1 py-1 text-xs font-bold rounded transition-colors ${chatTab === 'ai' ? 'bg-orange-600 text-white' : 'text-gray-400 hover:text-white'}`}
                 >
                   AI Chat
                 </button>
-                <button 
-                  onClick={() => setChatTab("review")} 
+                <button
+                  onClick={() => setChatTab("review")}
                   className={`flex-1 py-1 text-xs font-bold rounded transition-colors ${chatTab === 'review' ? 'bg-orange-600 text-white' : 'text-gray-400 hover:text-white'}`}
                 >
                   Reviews
@@ -436,11 +443,10 @@ export default function ShopPage() {
                 <div className="space-y-3">
                   {chatHistory.map((msg, i) => (
                     <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`p-3 rounded-xl text-sm shadow-sm max-w-[85%] ${
-                        msg.role === 'user' 
-                          ? 'bg-orange-600 text-white' 
+                      <div className={`p-3 rounded-xl text-sm shadow-sm max-w-[85%] ${msg.role === 'user'
+                          ? 'bg-orange-600 text-white'
                           : 'bg-white border border-gray-200 text-gray-900'
-                      }`}>
+                        }`}>
                         {msg.text}
                       </div>
                     </div>
@@ -448,34 +454,34 @@ export default function ShopPage() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                   <select className="w-full p-2 border border-gray-300 rounded-lg text-sm bg-white text-gray-900 focus:ring-2 focus:ring-orange-500 outline-none">
-                     {products.map(p => <option key={p._id} className="text-gray-900">{p.name}</option>)}
-                   </select>
-                   <textarea 
-                     placeholder="Write a review..." 
-                     className="w-full p-2 border border-gray-300 rounded-lg text-sm h-24 bg-white text-gray-900 focus:ring-2 focus:ring-orange-500 outline-none" 
-                   />
-                    <button 
-                      onClick={() => { alert("Review submitted successfully!"); setChatTab("ai"); }}
-                      className="w-full bg-gray-900 hover:bg-black text-white py-2 rounded-lg text-sm font-bold"
-                    >
-                      Submit Review
-                    </button>
+                  <select className="w-full p-2 border border-gray-300 rounded-lg text-sm bg-white text-gray-900 focus:ring-2 focus:ring-orange-500 outline-none">
+                    {products.map(p => <option key={p._id} className="text-gray-900">{p.name}</option>)}
+                  </select>
+                  <textarea
+                    placeholder="Write a review..."
+                    className="w-full p-2 border border-gray-300 rounded-lg text-sm h-24 bg-white text-gray-900 focus:ring-2 focus:ring-orange-500 outline-none"
+                  />
+                  <button
+                    onClick={() => { alert("Review submitted successfully!"); setChatTab("ai"); }}
+                    className="w-full bg-gray-900 hover:bg-black text-white py-2 rounded-lg text-sm font-bold"
+                  >
+                    Submit Review
+                  </button>
                 </div>
               )}
             </div>
 
             {chatTab === "ai" && (
               <div className="p-3 border-t border-gray-100 bg-white flex gap-2">
-                <input 
-                  value={chatMessage} 
-                  onChange={(e) => setChatMessage(e.target.value)} 
-                  onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()} 
-                  className="flex-1 bg-gray-100 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-gray-500 outline-none focus:ring-1 focus:ring-orange-500" 
-                  placeholder="Ask something..." 
+                <input
+                  value={chatMessage}
+                  onChange={(e) => setChatMessage(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                  className="flex-1 bg-gray-100 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-gray-500 outline-none focus:ring-1 focus:ring-orange-500"
+                  placeholder="Ask something..."
                 />
-                <button 
-                  onClick={handleSendMessage} 
+                <button
+                  onClick={handleSendMessage}
                   className="bg-orange-600 hover:bg-orange-700 p-2 rounded-lg text-white transition-colors flex items-center justify-center"
                 >
                   <Send size={16} />
@@ -484,8 +490,8 @@ export default function ShopPage() {
             )}
           </div>
         )}
-        <button 
-          onClick={() => setIsChatOpen(!isChatOpen)} 
+        <button
+          onClick={() => setIsChatOpen(!isChatOpen)}
           className="w-14 h-14 bg-orange-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all"
         >
           {isChatOpen ? <X size={24} /> : <MessageCircle size={28} />}
@@ -498,8 +504,9 @@ export default function ShopPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               {shop.logo ? (
+                // 🛠️ THE FIX: Applied getImageUrl to the shop logo
                 <img
-                  src={`${baseUrl}${shop.logo}`}
+                  src={getImageUrl(shop.logo)}
                   alt={shop.name}
                   className="w-12 h-12 object-cover rounded-lg border border-gray-200"
                 />
@@ -583,8 +590,8 @@ export default function ShopPage() {
 
       {/* Products Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
-        {/* 🆕 Search Bar Section */}
+
+        {/* Search Bar Section */}
         <div className="mb-8">
           <div className="relative max-w-md">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -598,7 +605,7 @@ export default function ShopPage() {
               className="block w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-2xl text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-orange-500 outline-none shadow-sm transition-all"
             />
             {searchQuery && (
-              <button 
+              <button
                 onClick={() => setSearchQuery("")}
                 className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600"
               >
@@ -630,8 +637,9 @@ export default function ShopPage() {
                 >
                   <div className="relative overflow-hidden bg-gray-100">
                     {p.image ? (
+                      // 🛠️ THE FIX: Applied getImageUrl to the product display
                       <img
-                        src={`${baseUrl}${p.image}`}
+                        src={getImageUrl(p.image)}
                         alt={p.name}
                         className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300"
                       />
@@ -731,7 +739,8 @@ export default function ShopPage() {
                   {Object.values(cart).map((item: any) => (
                     <div key={item._id} className="flex gap-4 p-4 bg-gray-50 rounded-lg">
                       {item.image ? (
-                        <img src={`${baseUrl}${item.image}`} className="w-20 h-20 object-cover rounded-lg" />
+                        // 🛠️ THE FIX: Applied getImageUrl to the cart images
+                        <img src={getImageUrl(item.image)} className="w-20 h-20 object-cover rounded-lg" />
                       ) : (
                         <div className="w-20 h-20 bg-gray-200 rounded-lg"></div>
                       )}
@@ -752,7 +761,14 @@ export default function ShopPage() {
                   <div className="flex gap-2 mb-2">
                     <div className="relative flex-1">
                       <Tag className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                      <input type="text" placeholder="Promo Code" value={couponCode} onChange={(e) => setCouponCode(e.target.value)} className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm uppercase" />
+                      <input
+                        type="text"
+                        placeholder="Promo Code"
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value)}
+                        // 🛠️ THE FIX: Added text-gray-900 and focus states to the Promo Code input
+                        className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 uppercase focus:ring-2 focus:ring-orange-500 outline-none"
+                      />
                     </div>
                     <button onClick={handleApplyCoupon} className="bg-gray-900 hover:bg-black text-white px-4 py-2 rounded-lg text-sm font-medium">Apply</button>
                   </div>
