@@ -295,7 +295,7 @@ export default function HomePage() {
                 </h1>
               </motion.div>
               <motion.div className="overflow-hidden w-full flex md:justify-end" variants={luxuryFadeUp}>
-                <h1 className="text-[12vw] md:text-[8rem] font-black tracking-tighter leading-[0.85] text-transparent bg-clip-text bg-gradient-to-r from-orange-500 via-amber-400 to-orange-600 md:-mt-6">
+                <h1 className="text-[12vw] md:text-[8rem] font-black tracking-tighter leading-[0.85] text-transparent bg-clip-text bg-gradient-to-r from-orange-500 via-amber-400 to-orange-600 md:-mt-3">
                   RETAILING.
                 </h1>
               </motion.div>
