@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ShoppingCart, Minus, Plus, Download, Store, Phone, MapPin, X, Package, CreditCard, CheckCircle, Tag, Receipt, MessageCircle, Send, Search } from "lucide-react";
+import { ShoppingCart, Minus, Plus, Download, Store, Phone, MapPin, X, Package, CreditCard, CheckCircle, Tag, Receipt, MessageCircle, Send, Search, Trash2 } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -20,13 +20,13 @@ export default function ShopPage() {
   const [appliedDiscount, setAppliedDiscount] = useState(0);
   const [couponError, setCouponError] = useState("");
 
-  // 🆕 Search State
+  // Search State
   const [searchQuery, setSearchQuery] = useState("");
 
-  // 🆕 NEW: Placed Order State for the Receipt Bill Screen
+  // Placed Order State for the Receipt Bill Screen
   const [placedOrder, setPlacedOrder] = useState<any>(null);
 
-  // --- 🆕 CHATBOT STATES ---
+  // --- CHATBOT STATES ---
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatTab, setChatTab] = useState<"ai" | "review">("ai");
   const [chatMessage, setChatMessage] = useState("");
@@ -36,7 +36,7 @@ export default function ShopPage() {
 
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-  // 🛠️ THE FIX: Smart URL checker to handle both Cloudinary and local image paths
+  // Smart URL checker to handle both Cloudinary and local image paths
   const getImageUrl = (imagePath: string) => {
     if (!imagePath) return "/placeholder.png"; // Fallback
     if (imagePath.startsWith("http")) return imagePath; // Cloudinary URLs
@@ -148,7 +148,7 @@ export default function ShopPage() {
     }
   };
 
-  // --- 🆕 CHATBOT LOGIC ---
+  // --- CHATBOT LOGIC ---
   const handleSendMessage = () => {
     if (!chatMessage.trim()) return;
     const userMsg = { role: "user", text: chatMessage };
@@ -169,13 +169,13 @@ export default function ShopPage() {
     }, 800);
   };
 
-  // 🆕 Filtered Products Logic
+  // Filtered Products Logic
   const filteredProducts = products.filter((p) =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (p.category && p.category.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  // 🆕 UPGRADED PDF GENERATOR
+  // UPGRADED PDF GENERATOR
   const downloadOrderPDF = (orderData: any) => {
     const doc = new jsPDF();
     doc.setFontSize(22);
@@ -341,7 +341,7 @@ export default function ShopPage() {
   return (
     <div className="min-h-screen bg-gray-50 relative">
 
-      {/* 🆕 BILL / RECEIPT SCREEN */}
+      {/* BILL / RECEIPT SCREEN */}
       {placedOrder && (
         <div className="fixed inset-0 bg-gray-50/95 backdrop-blur-sm z-[100] flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white max-w-md w-full rounded-2xl shadow-xl p-6 md:p-8 animate-in fade-in zoom-in duration-300">
@@ -417,7 +417,7 @@ export default function ShopPage() {
         </div>
       )}
 
-      {/* --- 🆕 CHATBOT UI --- */}
+      {/* --- CHATBOT UI --- */}
       <div className="fixed bottom-6 right-6 z-[100] flex flex-col items-end">
         {isChatOpen && (
           <div className="mb-4 w-80 md:w-96 bg-white rounded-2xl shadow-xl border border-gray-200 flex flex-col overflow-hidden animate-in slide-in-from-bottom-5">
@@ -444,8 +444,8 @@ export default function ShopPage() {
                   {chatHistory.map((msg, i) => (
                     <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                       <div className={`p-3 rounded-xl text-sm shadow-sm max-w-[85%] ${msg.role === 'user'
-                          ? 'bg-orange-600 text-white'
-                          : 'bg-white border border-gray-200 text-gray-900'
+                        ? 'bg-orange-600 text-white'
+                        : 'bg-white border border-gray-200 text-gray-900'
                         }`}>
                         {msg.text}
                       </div>
@@ -504,7 +504,6 @@ export default function ShopPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               {shop.logo ? (
-                // 🛠️ THE FIX: Applied getImageUrl to the shop logo
                 <img
                   src={getImageUrl(shop.logo)}
                   alt={shop.name}
@@ -637,7 +636,6 @@ export default function ShopPage() {
                 >
                   <div className="relative overflow-hidden bg-gray-100">
                     {p.image ? (
-                      // 🛠️ THE FIX: Applied getImageUrl to the product display
                       <img
                         src={getImageUrl(p.image)}
                         alt={p.name}
@@ -728,7 +726,7 @@ export default function ShopPage() {
               </button>
             </div>
 
-            <div className="p-4 flex-1 overflow-y-auto">
+            <div className="p-4 flex-1 overflow-y-auto bg-gray-50">
               {Object.keys(cart).length === 0 ? (
                 <div className="text-center py-12">
                   <ShoppingCart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
@@ -737,18 +735,55 @@ export default function ShopPage() {
               ) : (
                 <div className="space-y-4">
                   {Object.values(cart).map((item: any) => (
-                    <div key={item._id} className="flex gap-4 p-4 bg-gray-50 rounded-lg">
+                    // 🛠️ THE FIX: Redesigned the Cart Item to include increment/decrement and a delete button!
+                    <div key={item._id} className="flex gap-4 p-4 bg-white border border-gray-100 shadow-sm rounded-xl relative group">
+
+                      {/* Trash Button */}
+                      <button
+                        onClick={() => updateQuantity(item._id, -item.quantity)}
+                        className="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+
                       {item.image ? (
-                        // 🛠️ THE FIX: Applied getImageUrl to the cart images
-                        <img src={getImageUrl(item.image)} className="w-20 h-20 object-cover rounded-lg" />
+                        <img src={getImageUrl(item.image)} className="w-20 h-20 object-cover rounded-lg border border-gray-100" />
                       ) : (
-                        <div className="w-20 h-20 bg-gray-200 rounded-lg"></div>
+                        <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center border border-gray-100">
+                          <Package className="w-8 h-8 text-gray-300" />
+                        </div>
                       )}
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900">{item.name}</h3>
-                        <p className="text-orange-600 font-bold">₹{item.price}</p>
+
+                      <div className="flex-1 flex flex-col justify-between">
+                        <div className="pr-6">
+                          <h3 className="font-semibold text-gray-900 text-sm line-clamp-2">{item.name}</h3>
+                          <p className="text-orange-600 font-bold mt-0.5">₹{item.price}</p>
+                        </div>
+
+                        <div className="flex items-center justify-between mt-3">
+                          {/* 🛠️ NEW: Quantity Adjuster inside the cart sidebar */}
+                          <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
+                            <button
+                              onClick={() => updateQuantity(item._id, -1)}
+                              className="w-7 h-7 flex items-center justify-center bg-white rounded shadow-sm text-gray-700 hover:text-orange-600 transition-colors"
+                            >
+                              <Minus className="w-3.5 h-3.5" />
+                            </button>
+                            <span className="w-8 text-center text-sm font-bold text-gray-900">{item.quantity}</span>
+                            <button
+                              onClick={() => updateQuantity(item._id, 1)}
+                              disabled={item.quantity >= (item.stock || 99)}
+                              className="w-7 h-7 flex items-center justify-center bg-white rounded shadow-sm text-gray-700 hover:text-orange-600 disabled:opacity-50 transition-colors"
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+
+                          <div className="text-right font-bold text-gray-900">
+                            ₹{(item.price * item.quantity).toFixed(2)}
+                          </div>
+                        </div>
                       </div>
-                      <div className="text-right font-bold text-gray-900">₹{(item.price * item.quantity).toFixed(2)}</div>
                     </div>
                   ))}
                 </div>
@@ -766,7 +801,6 @@ export default function ShopPage() {
                         placeholder="Promo Code"
                         value={couponCode}
                         onChange={(e) => setCouponCode(e.target.value)}
-                        // 🛠️ THE FIX: Added text-gray-900 and focus states to the Promo Code input
                         className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 uppercase focus:ring-2 focus:ring-orange-500 outline-none"
                       />
                     </div>

@@ -2,9 +2,8 @@ fastapi
 uvicorn
 pymongo
 pandas
+numpy
 scikit-learn
 python-dotenv
-pandas
-numpy
-statsmodels
+prophet
 mlxtend
