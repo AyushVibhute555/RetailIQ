@@ -121,7 +121,7 @@ const luxuryFadeUp = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 1.2, ease: [0.16, 1, 0.3, 1] }
+    transition: { duration: 1.2, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }
   }
 };
 
@@ -238,7 +238,7 @@ export default function HomePage() {
                   initial={{ opacity: 0, y: 10, scale: 0.97 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.97 }}
-                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
                   className="absolute right-0 mt-4 w-64 bg-[#0a0a0a]/90 backdrop-blur-2xl border border-white/10 rounded-2xl p-2 shadow-[0_30px_60px_rgba(0,0,0,0.8)] z-[110]"
                 >
                   {userEmail ? (
@@ -291,7 +291,7 @@ export default function HomePage() {
             <div className="flex flex-col gap-2 mb-12 w-full">
               <motion.div className="overflow-hidden" variants={luxuryFadeUp}>
                 <h1 className="text-[12vw] md:text-[8rem] font-black tracking-tighter leading-[0.85] text-white">
-                  INTELLIGENT 
+                  INTELLIGENT
                 </h1>
               </motion.div>
               <motion.div className="overflow-hidden w-full flex md:justify-end" variants={luxuryFadeUp}>
@@ -541,7 +541,7 @@ function BentoCard({ icon, title, desc }: { icon: any, title: string, desc: stri
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
       whileHover={{ y: -5, backgroundColor: "rgba(255,255,255,0.03)" }}
       className="p-8 md:p-10 rounded-[2rem] bg-white/[0.01] border border-white/5 transition-all duration-500 group relative overflow-hidden flex flex-col justify-between h-full min-h-[260px]"
     >
